@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-   postgres:
+  postgres:
     build:
       context: ./Docker
       dockerfile: Dockerfile
@@ -16,6 +16,23 @@ services:
     restart: always
     networks:
       - route-roam-network
+  minio1:
+    image: minio/minio
+    volumes:
+      - ./docker-volume/minio:/data
+    ports:
+      - 9000:9000
+    expose:
+      - 9000
+    environment:
+      MINIO_ACCESS_KEY: route-roam
+      MINIO_SECRET_KEY: route-roam
+    command: server /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
 networks:
   route-roam-network:
