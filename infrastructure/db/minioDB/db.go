@@ -67,14 +67,17 @@ func (d *db) UploadFile(
 	}
 	defer src.Close()
 
-	userMetaData := map[string]string{"x-amz-acl": "public-read"}
-
-	_, err = d.Client.PutObject(ctx, d.config.BucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: contentType, UserMetadata: userMetaData})
+	_, err = d.Client.PutObject(
+		ctx, d.config.BucketName, objectName, src, file.Size,
+		minio.PutObjectOptions{
+			ContentType: contentType,
+		},
+	)
 	if err != nil {
 		return "", err
 	}
 
-	filepath := "http://" + d.config.Endpoint + "/" + d.config.BucketName + "/" + objectName
+	filepath := objectName
 	return filepath, nil
 }
 

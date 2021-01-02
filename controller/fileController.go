@@ -36,20 +36,18 @@ func (c *controller) UploadFiles(ctx *gin.Context) {
 }
 
 func (c *controller) GetFile(ctx *gin.Context) {
-	name := ctx.Query("name")
-	dsID := "images"
-	objectName := time.Now().Format("20060102") + "/" + dsID + "/" + name
-	object, err := c.service.GetFile(ctx, objectName)
+	filepath := ctx.Param("filepath")
+	object, err := c.service.GetFile(ctx, filepath)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("%v", err),
+			"message": "file not found",
 		})
 		return
 	}
 	st, err := object.Stat()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("%v", err),
+			"message": "file not found",
 		})
 		return
 	}
