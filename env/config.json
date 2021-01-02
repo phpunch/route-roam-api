@@ -1,17 +1,14 @@
 {
-  "REDIS_ADDRESS": "redis:6379",
-	"GRPC_ADDRESS":  ":9400",
-
   "Log": {
     "Level": "debug",
     "Color": true,
     "JSON": false
   },
 
-	"code":         "zap",
-	"level":        "debug",
+  "code": "zap",
+  "level": "debug",
   "enableCaller": "true",
-  
+
   "PostgreSQL": {
     "DBHost": "localhost",
     "DBPort": "5432",
@@ -19,5 +16,13 @@
     "DBPassword": "postgres",
     "DBName": "postgres",
     "MaxOpenConns": 100
+  },
+
+  "Minio": {
+    "Endpoint": "localhost:9000",
+    "AccessKeyID": "route-roam",
+    "SecretAccessKey": "route-roam",
+    "UseSSL": false,
+    "BucketName": "image"
   }
 }

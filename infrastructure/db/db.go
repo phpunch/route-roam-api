@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"github.com/phpunch/route-roam-api/infrastructure/db/minioDB"
 	"github.com/phpunch/route-roam-api/infrastructure/db/postgresqlDB"
@@ -9,23 +10,27 @@ import (
 
 type DB struct {
 	PostgresqlDB postgresqlDB.DB
-	MinioDB      minioDB.DB
+	MinioDB      miniodb.DB
 }
 
 func NewDB(logger log.Logger) (*DB, error) {
 
-	dbConfig, err := postgresqlDB.InitConfig()
+	postgresqlConfig, err := postgresqlDB.InitConfig()
 	if err != nil {
-		// TODO: error handling
 		return nil, fmt.Errorf("failed to init postgres config: %v", err)
 	}
-
-	postgresqlDB, err := postgresqlDB.New(dbConfig, logger)
+	postgresqlDB, err := postgresqlDB.New(postgresqlConfig, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to init postgres database: %v", err)
 	}
-	minioDB := minioDB.New()
-	if err := minioDB.CreateBucket("image"); err != nil {
+
+	minioConfig, err := miniodb.InitConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to init minio config: %v", err)
+	}
+	minioDB := miniodb.New(minioConfig)
+	ctx := context.Background()
+	if err := minioDB.CreateBucket(ctx, minioConfig.BucketName); err != nil {
 		return nil, err
 	}
 

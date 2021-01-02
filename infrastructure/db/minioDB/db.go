@@ -1,4 +1,4 @@
-package minioDB
+package miniodb
 
 import (
 	"context"
@@ -10,39 +10,38 @@ import (
 )
 
 type DB interface {
-	CreateBucket(name string) error
-	UploadFile(bucketName string, objectName string, file *multipart.FileHeader, contentType string) error
-	GetFile(bucketName, objectName string) (*minio.Object, error)
+	CreateBucket(ctx context.Context, name string) error
+	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) error
+	GetFile(ctx context.Context, objectName string) (*minio.Object, error)
 }
 
 type db struct {
 	Client *minio.Client
+	config *Config
 }
 
-func New() DB {
-	endpoint := "localhost:9000"
-	accessKeyID := "route-roam"
-	secretAccessKey := "route-roam"
-	useSSL := false
-
+func New(config *Config) DB {
 	// Initialize minio client object.
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: useSSL,
-	})
+	minioClient, err := minio.New(config.Endpoint,
+		&minio.Options{
+			Creds: credentials.NewStaticV4(
+				config.AccessKeyID,
+				config.SecretAccessKey,
+				"",
+			),
+			Secure: config.UseSSL,
+		})
 	if err != nil {
 		log.Log.Fatalf("%v", err)
 	}
 	return &db{
 		Client: minioClient,
+		config: config,
 	}
 }
 
-func (d *db) CreateBucket(name string) error {
-	location := "us-east-1"
-
-	ctx := context.Background()
-	err := d.Client.MakeBucket(ctx, name, minio.MakeBucketOptions{Region: location})
+func (d *db) CreateBucket(ctx context.Context, name string) error {
+	err := d.Client.MakeBucket(ctx, name, minio.MakeBucketOptions{})
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if you run this twice)
 		exists, errBucketExists := d.Client.BucketExists(ctx, name)
@@ -54,23 +53,10 @@ func (d *db) CreateBucket(name string) error {
 		return fmt.Errorf("%v", err)
 	}
 	return nil
-
-	// // Upload the zip file
-	// objectName := "golden-oldies.zip"
-	// filePath := "/tmp/golden-oldies.zip"
-	// contentType := "application/zip"
-
-	// // Upload the zip file with FPutObject
-	// n, err := minioClient.FPutObject(ctx, bucketName, objectName, filePath, minio.PutObjectOptions{ContentType: contentType})
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-
-	// log.Printf("Successfully uploaded %s of size %d\n", objectName, n)
 }
 
 func (d *db) UploadFile(
-	bucketName string,
+	ctx context.Context,
 	objectName string,
 	file *multipart.FileHeader,
 	contentType string,
@@ -83,18 +69,15 @@ func (d *db) UploadFile(
 
 	userMetaData := map[string]string{"x-amz-acl": "public-read"}
 
-	// Use PutObject to upload a zip file
-	ctx := context.Background()
-
-	_, err = d.Client.PutObject(ctx, bucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: contentType, UserMetadata: userMetaData})
+	_, err = d.Client.PutObject(ctx, d.config.BucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: contentType, UserMetadata: userMetaData})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *db) GetFile(bucketName, objectName string) (*minio.Object, error) {
-	object, err := d.Client.GetObject(context.Background(), bucketName, objectName, minio.GetObjectOptions{})
+func (d *db) GetFile(ctx context.Context, objectName string) (*minio.Object, error) {
+	object, err := d.Client.GetObject(ctx, d.config.BucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
 	}

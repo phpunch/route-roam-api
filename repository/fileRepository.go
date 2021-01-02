@@ -1,24 +1,26 @@
 package repository
 
 import (
+	"context"
 	"mime/multipart"
 
 	"github.com/minio/minio-go/v7"
 )
 
 type fileRepository interface {
-	UploadFile(objectName string, file *multipart.FileHeader, contentType string) error
-	GetFile(objectName string) (*minio.Object, error)
+	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) error
+	GetFile(ctx context.Context, objectName string) (*minio.Object, error)
 }
 
 func (r *repository) UploadFile(
+	ctx context.Context,
 	objectName string,
 	file *multipart.FileHeader,
 	contentType string,
 ) error {
-	return r.Ds.MinioDB.UploadFile("image", objectName, file, contentType)
+	return r.Ds.MinioDB.UploadFile(ctx, objectName, file, contentType)
 }
 
-func (r *repository) GetFile(objectName string) (*minio.Object, error) {
-	return r.Ds.MinioDB.GetFile("image", objectName)
+func (r *repository) GetFile(ctx context.Context, objectName string) (*minio.Object, error) {
+	return r.Ds.MinioDB.GetFile(ctx, objectName)
 }
