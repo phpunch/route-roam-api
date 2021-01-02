@@ -6,6 +6,7 @@ import (
 
 type Controller interface {
 	authController
+	fileController
 }
 
 type controller struct {

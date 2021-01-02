@@ -10,6 +10,8 @@ import (
 )
 
 type Service interface {
+	fileService
+	postService
 	RegisterUser(email string, password string) error
 	LoginUser(email string, password string) error
 }

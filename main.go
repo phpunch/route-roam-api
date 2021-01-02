@@ -67,6 +67,8 @@ func main() {
 
 	router.POST("/register", controller.RegisterUser)
 	router.POST("/login", controller.LoginUser)
+	router.POST("/file", controller.UploadFiles)
+	router.GET("/file", controller.GetFile)
 
 	router.Run()
 }

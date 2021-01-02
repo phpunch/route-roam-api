@@ -1,7 +1,6 @@
 package postgresqlDB
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -31,7 +30,6 @@ func InitConfig() (*Config, error) {
 		DBName:       viper.GetString("PostgreSQL.DBName"),
 		MaxOpenConns: viper.GetInt32("PostgreSQL.MaxOpenConns"),
 	}
-	fmt.Printf("%+v", config)
 	if config.DBHost == "" {
 		config.DBHost = "localhost"
 	}

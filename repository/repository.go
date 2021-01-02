@@ -6,8 +6,12 @@ import (
 )
 
 type Repository interface {
+	fileRepository
 	AddUser(user *model.User) error
 	GetUser(email string) (*model.User, error)
+	CreatePost(post *model.Post) error
+	// LikePost(userId string, postId string) error
+	// CommentPost(userId string, postId string, text string) error
 }
 
 type repository struct {
@@ -25,4 +29,7 @@ func (r *repository) AddUser(user *model.User) error {
 }
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
+}
+func (r *repository) CreatePost(post *model.Post) error {
+	return r.Ds.PostgresqlDB.Insert(post)
 }
