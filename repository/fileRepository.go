@@ -8,7 +8,7 @@ import (
 )
 
 type fileRepository interface {
-	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) error
+	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) (string, error)
 	GetFile(ctx context.Context, objectName string) (*minio.Object, error)
 }
 
@@ -17,7 +17,7 @@ func (r *repository) UploadFile(
 	objectName string,
 	file *multipart.FileHeader,
 	contentType string,
-) error {
+) (string, error) {
 	return r.Ds.MinioDB.UploadFile(ctx, objectName, file, contentType)
 }
 

@@ -11,7 +11,7 @@ import (
 
 type DB interface {
 	CreateBucket(ctx context.Context, name string) error
-	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) error
+	UploadFile(ctx context.Context, objectName string, file *multipart.FileHeader, contentType string) (string, error)
 	GetFile(ctx context.Context, objectName string) (*minio.Object, error)
 }
 
@@ -60,10 +60,10 @@ func (d *db) UploadFile(
 	objectName string,
 	file *multipart.FileHeader,
 	contentType string,
-) error {
+) (string, error) {
 	src, err := file.Open()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer src.Close()
 
@@ -71,9 +71,11 @@ func (d *db) UploadFile(
 
 	_, err = d.Client.PutObject(ctx, d.config.BucketName, objectName, src, file.Size, minio.PutObjectOptions{ContentType: contentType, UserMetadata: userMetaData})
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+
+	filepath := "http://" + d.config.Endpoint + "/" + d.config.BucketName + "/" + objectName
+	return filepath, nil
 }
 
 func (d *db) GetFile(ctx context.Context, objectName string) (*minio.Object, error) {
