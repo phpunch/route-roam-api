@@ -3,7 +3,9 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/phpunch/route-roam-api/log"
 	"net/http"
+	"time"
 )
 
 type postController interface {
@@ -19,18 +21,34 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 		return
 	}
 	var textPtr *string
-	var imagePtr *string
-	*textPtr, _ = ctx.GetPostForm("text")
-	*imagePtr, _ = ctx.GetPostForm("image")
 
-	if err := c.service.CreatePost(userID, textPtr, imagePtr); err != nil {
+	// upload images
+	form, _ := ctx.MultipartForm()
+	files := form.File["datasetPath[]"]
+
+	filePathMinio := make([]string, 5)
+	i := 0
+	for _, file := range files {
+		log.Log.Infof("upload file path: %s", file.Filename)
+		objectName := userID + "/" + time.Now().Format("20060102") + "/" + file.Filename
+		filepath, err := c.service.UploadFile(ctx, objectName, file, "image")
+		if err != nil {
+			ctx.JSON(http.StatusForbidden, fmt.Errorf("Failed upload file"))
+		}
+		filePathMinio[i] = filepath
+		i = i + 1
+	}
+
+	// save metadata
+	if err := c.service.CreatePost(userID, textPtr, filePathMinio); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
+		"message":  "success",
+		"filepath": filePathMinio,
 	})
 
 }
