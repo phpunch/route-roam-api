@@ -3,6 +3,7 @@ package postgresqlDB
 import (
 	"fmt"
 	"github.com/phpunch/route-roam-api/log"
+	"github.com/phpunch/route-roam-api/model"
 
 	"gorm.io/gorm/clause"
 
@@ -14,6 +15,7 @@ type DB interface {
 	UserDBInterface
 	Upsert(data interface{}, clause clause.OnConflict) error
 	Insert(data interface{}) error
+	DeleteUserLike(like *model.Like) error
 
 	Close() error
 }
@@ -60,6 +62,15 @@ func (pgdb *PostgresqlDB) Close() error {
 	return err
 }
 
+func (pgdb *PostgresqlDB) Upsert(data interface{}, clause clause.OnConflict) error {
+	result := pgdb.DB.Clauses(clause).Create(data)
+	err := result.Error
+	if err != nil {
+		return fmt.Errorf("upsert error: %v", err)
+	}
+	return nil
+}
+
 func (pgdb *PostgresqlDB) Insert(data interface{}) error {
 	result := pgdb.DB.Create(data)
 	err := result.Error
@@ -69,11 +80,14 @@ func (pgdb *PostgresqlDB) Insert(data interface{}) error {
 	return nil
 }
 
-func (pgdb *PostgresqlDB) Upsert(data interface{}, clause clause.OnConflict) error {
-	result := pgdb.DB.Clauses(clause).Create(data)
+func (pgdb *PostgresqlDB) DeleteUserLike(like *model.Like) error {
+	result := pgdb.DB.Where("user_id = ? AND post_id = ?",
+		like.UserID,
+		like.PostID,
+	).Delete(like)
 	err := result.Error
 	if err != nil {
-		return fmt.Errorf("upsert error: %v", err)
+		return fmt.Errorf("delete error: %v", err)
 	}
 	return nil
 }

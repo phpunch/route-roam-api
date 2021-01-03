@@ -71,6 +71,7 @@ func main() {
 	router.GET("/file/*filepath", controller.GetFile)
 	router.POST("/post", controller.CreatePost)
 	router.POST("/like", controller.LikePost)
+	router.POST("/unlike", controller.UnlikePost)
 	router.POST("/comment", controller.CommentPost)
 
 	router.Run()

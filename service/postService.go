@@ -7,6 +7,7 @@ import (
 type postService interface {
 	CreatePost(userId string, text *string, imageURLs []string) error
 	LikePost(userId string, postId string) error
+	UnlikePost(userId string, postId string) error
 	CommentPost(userId string, postId string, text string) error
 }
 
@@ -24,6 +25,13 @@ func (s *service) LikePost(userId string, postId string) error {
 		PostID: postId,
 	}
 	return s.repository.LikePost(like)
+}
+func (s *service) UnlikePost(userId string, postId string) error {
+	like := &model.Like{
+		UserID: userId,
+		PostID: postId,
+	}
+	return s.repository.UnlikePost(like)
 }
 func (s *service) CommentPost(userId string, postId string, text string) error {
 	return nil
