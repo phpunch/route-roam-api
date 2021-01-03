@@ -19,7 +19,11 @@ func (s *service) CreatePost(userId string, text *string, imageURLs []string) er
 	return s.repository.CreatePost(post)
 }
 func (s *service) LikePost(userId string, postId string) error {
-	return nil
+	like := &model.Like{
+		UserID: userId,
+		PostID: postId,
+	}
+	return s.repository.LikePost(like)
 }
 func (s *service) CommentPost(userId string, postId string, text string) error {
 	return nil

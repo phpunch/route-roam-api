@@ -10,7 +10,7 @@ type Repository interface {
 	AddUser(user *model.User) error
 	GetUser(email string) (*model.User, error)
 	CreatePost(post *model.Post) error
-	// LikePost(userId string, postId string) error
+	LikePost(like *model.Like) error
 	// CommentPost(userId string, postId string, text string) error
 }
 
@@ -32,4 +32,7 @@ func (r *repository) GetUser(email string) (*model.User, error) {
 }
 func (r *repository) CreatePost(post *model.Post) error {
 	return r.Ds.PostgresqlDB.Insert(post)
+}
+func (r *repository) LikePost(like *model.Like) error {
+	return r.Ds.PostgresqlDB.Insert(like)
 }
