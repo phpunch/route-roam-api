@@ -5,7 +5,7 @@ import (
 )
 
 type Post struct {
-	ID       int `gorm:"primaryKey"`
+	ID       int `gorm:"primaryKey;autoIncrement"`
 	UserID   string
 	Text     *string
 	ImageURL pq.StringArray `gorm:"type:text[]"`
