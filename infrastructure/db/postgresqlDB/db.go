@@ -16,6 +16,7 @@ type DB interface {
 	Upsert(data interface{}, clause clause.OnConflict) error
 	Insert(data interface{}) error
 	DeleteUserLike(like *model.Like) error
+	GetPosts() ([]model.Post, error)
 
 	Close() error
 }
@@ -46,6 +47,14 @@ func New(config *Config, logger log.Logger) (pgdb *PostgresqlDB, err error) {
 	})
 	if err != nil {
 		pgdb.logger.Errorf("Error connecting to postgres: %+v", err)
+		return nil, err
+	}
+
+	if err := pgdb.DB.SetupJoinTable(&model.Post{}, "Likes", &model.Like{}); err != nil {
+		return nil, err
+	}
+
+	if err := pgdb.DB.AutoMigrate(&model.Post{}, &model.User{}); err != nil {
 		return nil, err
 	}
 

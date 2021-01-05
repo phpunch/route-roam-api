@@ -12,6 +12,7 @@ type Repository interface {
 	CreatePost(post *model.Post) error
 	LikePost(like *model.Like) error
 	UnlikePost(like *model.Like) error
+	GetPosts() ([]model.Post, error)
 	// CommentPost(userId string, postId string, text string) error
 }
 
@@ -39,4 +40,7 @@ func (r *repository) LikePost(like *model.Like) error {
 }
 func (r *repository) UnlikePost(like *model.Like) error {
 	return r.Ds.PostgresqlDB.DeleteUserLike(like)
+}
+func (r *repository) GetPosts() ([]model.Post, error) {
+	return r.Ds.PostgresqlDB.GetPosts()
 }

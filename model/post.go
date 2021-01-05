@@ -9,4 +9,5 @@ type Post struct {
 	UserID   string
 	Text     *string
 	ImageURL pq.StringArray `gorm:"type:text[]"`
+	Likes    []User         `gorm:"many2many:likes"`
 }

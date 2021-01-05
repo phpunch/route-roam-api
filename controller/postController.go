@@ -13,6 +13,7 @@ type postController interface {
 	LikePost(ctx *gin.Context)
 	UnlikePost(ctx *gin.Context)
 	CommentPost(ctx *gin.Context)
+	GetPosts(ctx *gin.Context)
 }
 
 func (c *controller) CreatePost(ctx *gin.Context) {
@@ -123,5 +124,18 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 	})
+}
 
+func (c *controller) GetPosts(ctx *gin.Context) {
+	posts, err := c.service.GetPosts()
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": fmt.Sprintf("%v", err),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"posts":   posts,
+	})
 }

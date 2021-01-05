@@ -72,6 +72,7 @@ func main() {
 	router.POST("/post", controller.CreatePost)
 	router.POST("/like", controller.LikePost)
 	router.POST("/unlike", controller.UnlikePost)
+	router.GET("/posts", controller.GetPosts)
 	router.POST("/comment", controller.CommentPost)
 
 	router.Run()
