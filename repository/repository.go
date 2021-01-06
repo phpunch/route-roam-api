@@ -27,20 +27,24 @@ func NewRepository(ds *db.DB) Repository {
 }
 
 func (r *repository) AddUser(user *model.User) error {
-	return r.Ds.PostgresqlDB.Insert(user)
+	return r.Ds.PostgresqlDB.CreateUser(user)
 }
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
 }
 func (r *repository) CreatePost(post *model.Post) error {
-	return r.Ds.PostgresqlDB.Insert(post)
+	// return r.Ds.PostgresqlDB.Insert(post)
+	return nil
 }
 func (r *repository) LikePost(like *model.Like) error {
-	return r.Ds.PostgresqlDB.Insert(like)
+	// return r.Ds.PostgresqlDB.Insert(like)
+	return nil
 }
 func (r *repository) UnlikePost(like *model.Like) error {
-	return r.Ds.PostgresqlDB.DeleteUserLike(like)
+	// return r.Ds.PostgresqlDB.DeleteUserLike(like)
+	return nil
 }
 func (r *repository) GetPosts() ([]model.Post, error) {
-	return r.Ds.PostgresqlDB.GetPosts()
+	// return r.Ds.PostgresqlDB.GetPosts()
+	return nil, nil
 }

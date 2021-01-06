@@ -1,21 +1,20 @@
 package postgresqlDB
 
 import (
+	"context"
 	"fmt"
 	"github.com/phpunch/route-roam-api/log"
 	"github.com/phpunch/route-roam-api/model"
 
-	"gorm.io/gorm/clause"
-
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type DB interface {
 	UserDBInterface
-	Upsert(data interface{}, clause clause.OnConflict) error
-	Insert(data interface{}) error
-	DeleteUserLike(like *model.Like) error
+	// Upsert(data interface{}, clause clause.OnConflict) error
+	// Insert(data interface{}) error
+	// DeleteUserLike(like *model.Like) error
 	GetPosts() ([]model.Post, error)
 
 	Close() error
@@ -23,7 +22,7 @@ type DB interface {
 
 type PostgresqlDB struct {
 	logger log.Logger
-	DB     *gorm.DB
+	DB     *pgxpool.Pool
 }
 
 func New(config *Config, logger log.Logger) (pgdb *PostgresqlDB, err error) {
@@ -40,21 +39,18 @@ func New(config *Config, logger log.Logger) (pgdb *PostgresqlDB, err error) {
 		config.DBPassword,
 		config.DBName,
 	)
-	dialector := postgres.Open(connStr)
 
-	pgdb.DB, err = gorm.Open(dialector, &gorm.Config{
-		Logger: NewGormLogger(&pgdb.logger),
-	})
+	//db, err = pgx.Connect(context.Background(), connStr)
+	var connectConf, _ = pgxpool.ParseConfig(connStr)
+	connectConf.MaxConns = config.MaxOpenConns
+	//connectConf.MaxConnLifetime = 300 * time.Second // use defaults until we have benchmarked this further
+	//connectConf.HealthCheckPeriod = 300 * time.Second
+	//connectConf.ConnConfig.PreferSimpleProtocol = true // don't wrap queries into transactions
+	connectConf.ConnConfig.Logger = NewDatabaseLogger(&pgdb.logger)
+	connectConf.ConnConfig.LogLevel = pgx.LogLevelWarn
+	pgdb.DB, err = pgxpool.ConnectConfig(context.Background(), connectConf)
 	if err != nil {
-		pgdb.logger.Errorf("Error connecting to postgres: %+v", err)
-		return nil, err
-	}
-
-	if err := pgdb.DB.SetupJoinTable(&model.Post{}, "Likes", &model.Like{}); err != nil {
-		return nil, err
-	}
-
-	if err := pgdb.DB.AutoMigrate(&model.Post{}, &model.User{}); err != nil {
+		pgdb.logger.Errorf("Error connecting to postgres: %+v")
 		return nil, err
 	}
 
@@ -62,41 +58,36 @@ func New(config *Config, logger log.Logger) (pgdb *PostgresqlDB, err error) {
 }
 
 func (pgdb *PostgresqlDB) Close() error {
-	connDB, err := pgdb.DB.DB()
-	if err != nil {
-		pgdb.logger.Errorf("Errorf close db: %+v", err)
-		return err
-	}
-	err = connDB.Close()
-	return err
-}
-
-func (pgdb *PostgresqlDB) Upsert(data interface{}, clause clause.OnConflict) error {
-	result := pgdb.DB.Clauses(clause).Create(data)
-	err := result.Error
-	if err != nil {
-		return fmt.Errorf("upsert error: %v", err)
-	}
+	pgdb.DB.Close()
 	return nil
 }
 
-func (pgdb *PostgresqlDB) Insert(data interface{}) error {
-	result := pgdb.DB.Create(data)
-	err := result.Error
-	if err != nil {
-		return fmt.Errorf("insert error: %v", err)
-	}
-	return nil
-}
+// func (pgdb *PostgresqlDB) Upsert(data interface{}, clause clause.OnConflict) error {
+// 	result := pgdb.DB.Clauses(clause).Create(data)
+// 	err := result.Error
+// 	if err != nil {
+// 		return fmt.Errorf("upsert error: %v", err)
+// 	}
+// 	return nil
+// }
 
-func (pgdb *PostgresqlDB) DeleteUserLike(like *model.Like) error {
-	result := pgdb.DB.Where("user_id = ? AND post_id = ?",
-		like.UserID,
-		like.PostID,
-	).Delete(like)
-	err := result.Error
-	if err != nil {
-		return fmt.Errorf("delete error: %v", err)
-	}
-	return nil
-}
+// func (pgdb *PostgresqlDB) Insert(data interface{}) error {
+// 	result := pgdb.DB.Create(data)
+// 	err := result.Error
+// 	if err != nil {
+// 		return fmt.Errorf("insert error: %v", err)
+// 	}
+// 	return nil
+// }
+
+// func (pgdb *PostgresqlDB) DeleteUserLike(like *model.Like) error {
+// 	result := pgdb.DB.Where("user_id = ? AND post_id = ?",
+// 		like.UserID,
+// 		like.PostID,
+// 	).Delete(like)
+// 	err := result.Error
+// 	if err != nil {
+// 		return fmt.Errorf("delete error: %v", err)
+// 	}
+// 	return nil
+// }

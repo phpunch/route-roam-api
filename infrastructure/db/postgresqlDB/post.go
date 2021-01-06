@@ -9,10 +9,11 @@ type PostDBInterface interface {
 }
 
 func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
-	var result []model.Post
-	tx := pgdb.DB.Preload("likes").Find(&result)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	return result, nil
+	// var result []model.Post
+	// tx := pgdb.DB.Preload("likes").Find(&result)
+	// if tx.Error != nil {
+	// 	return nil, tx.Error
+	// }
+	// return result, nil
+	return nil, nil
 }
