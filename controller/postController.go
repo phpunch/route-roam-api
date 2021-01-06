@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/phpunch/route-roam-api/log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -17,12 +18,20 @@ type postController interface {
 }
 
 func (c *controller) CreatePost(ctx *gin.Context) {
-	userID, found := ctx.GetPostForm("userId")
+	userIDStr, found := ctx.GetPostForm("userId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
 	var textPtr *string
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
+		return
+	}
 
 	// upload images
 	form, _ := ctx.MultipartForm()
@@ -32,7 +41,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	i := 0
 	for _, file := range files {
 		log.Log.Infof("upload file path: %s", file.Filename)
-		objectName := userID + "/" + time.Now().Format("20060102") + "/" + file.Filename
+		objectName := userIDStr + "/" + time.Now().Format("20060102") + "/" + file.Filename
 		filepath, err := c.service.UploadFile(ctx, objectName, file, "image")
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, fmt.Errorf("Failed upload file"))
@@ -55,16 +64,31 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 
 }
 func (c *controller) LikePost(ctx *gin.Context) {
-	userID, found := ctx.GetPostForm("userId")
+	userIDStr, found := ctx.GetPostForm("userId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-	postID, found := ctx.GetPostForm("postId")
+	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
+		return
+	}
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
+		return
+	}
+
 	if err := c.service.LikePost(userID, postID); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
@@ -77,14 +101,28 @@ func (c *controller) LikePost(ctx *gin.Context) {
 }
 
 func (c *controller) UnlikePost(ctx *gin.Context) {
-	userID, found := ctx.GetPostForm("userId")
+	userIDStr, found := ctx.GetPostForm("userId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-	postID, found := ctx.GetPostForm("postId")
+	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
+		return
+	}
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
+		return
+	}
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
 		return
 	}
 	if err := c.service.UnlikePost(userID, postID); err != nil {
@@ -100,12 +138,12 @@ func (c *controller) UnlikePost(ctx *gin.Context) {
 }
 
 func (c *controller) CommentPost(ctx *gin.Context) {
-	userID, found := ctx.GetPostForm("userId")
+	userIDStr, found := ctx.GetPostForm("userId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-	postID, found := ctx.GetPostForm("postId")
+	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
@@ -113,6 +151,21 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 	text, found := ctx.GetPostForm("text")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
+		return
+	}
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "userID is not number",
+		})
 		return
 	}
 	if err := c.service.CommentPost(userID, postID, text); err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/phpunch/route-roam-api/log"
-	"github.com/phpunch/route-roam-api/model"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -12,10 +11,7 @@ import (
 
 type DB interface {
 	UserDBInterface
-	// Upsert(data interface{}, clause clause.OnConflict) error
-	// Insert(data interface{}) error
-	// DeleteUserLike(like *model.Like) error
-	GetPosts() ([]model.Post, error)
+	PostDBInterface
 
 	Close() error
 }
