@@ -34,6 +34,20 @@ func (pgdb *PostgresqlDB) CreatePost(post *model.Post) error {
 
 }
 func (pgdb *PostgresqlDB) LikePost(like *model.Like) error {
+	_, err := pgdb.DB.Exec(context.Background(), `
+	INSERT INTO likes (
+		"user_id",
+		"post_id"
+	)
+	VALUES ($1, $2)
+`,
+		like.UserID,
+		like.PostID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create post: %v", err)
+	}
+
 	return nil
 }
 func (pgdb *PostgresqlDB) UnlikePost(like *model.Like) error {
@@ -43,7 +57,9 @@ func (pgdb *PostgresqlDB) UnlikePost(like *model.Like) error {
 func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 	var result []model.Post
 	rows, err := pgdb.DB.Query(context.Background(), `
-		SELECT id, user_id, text, image_url FROM posts 
+		select id, user_id, text, image_url,
+		(select count(*) from likes where likes.post_id = posts.id) as likes
+		from posts
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query user: %v", err)
@@ -52,7 +68,7 @@ func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 
 	for rows.Next() {
 		var post model.Post
-		err = rows.Scan(&post.ID, &post.UserID, &post.Text, &post.ImageURL)
+		err = rows.Scan(&post.ID, &post.UserID, &post.Text, &post.ImageURL, &post.Likes)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
