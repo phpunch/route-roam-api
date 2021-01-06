@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/gin-gonic/gin v1.6.3
+	github.com/jackc/pgx/v4 v4.10.1
 	github.com/lib/pq v1.3.0
 	github.com/minio/minio-go/v7 v7.0.6
 	github.com/spf13/viper v1.7.1
