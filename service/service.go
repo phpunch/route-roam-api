@@ -12,7 +12,7 @@ import (
 type Service interface {
 	fileService
 	postService
-	RegisterUser(email string, password string) error
+	RegisterUser(email string, password string) (int64, error)
 	LoginUser(email string, password string) error
 }
 
@@ -28,7 +28,7 @@ func NewService(r repository.Repository) Service {
 
 func (s *service) RegisterUser(
 	email string, password string,
-) error {
+) (int64, error) {
 	email = strings.TrimSpace(email)
 	password = strings.TrimSpace(password)
 
@@ -37,6 +37,7 @@ func (s *service) RegisterUser(
 		Email:    email,
 		Password: hashedPwd,
 	}
+
 	return s.repository.AddUser(user)
 }
 

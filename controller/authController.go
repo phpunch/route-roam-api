@@ -22,7 +22,8 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-	if err := c.service.RegisterUser(email, password); err != nil {
+	userID, err := c.service.RegisterUser(email, password)
+	if err != nil {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
@@ -30,6 +31,7 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
+		"userId":  userID,
 	})
 }
 

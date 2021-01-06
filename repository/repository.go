@@ -7,7 +7,7 @@ import (
 
 type Repository interface {
 	fileRepository
-	AddUser(user *model.User) error
+	AddUser(user *model.User) (int64, error)
 	GetUser(email string) (*model.User, error)
 	CreatePost(post *model.Post) error
 	LikePost(like *model.Like) error
@@ -26,25 +26,22 @@ func NewRepository(ds *db.DB) Repository {
 	}
 }
 
-func (r *repository) AddUser(user *model.User) error {
+func (r *repository) AddUser(user *model.User) (int64, error) {
 	return r.Ds.PostgresqlDB.CreateUser(user)
 }
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
 }
 func (r *repository) CreatePost(post *model.Post) error {
-	// return r.Ds.PostgresqlDB.Insert(post)
+	return r.Ds.PostgresqlDB.CreatePost(post)
 	return nil
 }
 func (r *repository) LikePost(like *model.Like) error {
-	// return r.Ds.PostgresqlDB.Insert(like)
-	return nil
+	return r.Ds.PostgresqlDB.LikePost(like)
 }
 func (r *repository) UnlikePost(like *model.Like) error {
-	// return r.Ds.PostgresqlDB.DeleteUserLike(like)
-	return nil
+	return r.Ds.PostgresqlDB.UnlikePost(like)
 }
 func (r *repository) GetPosts() ([]model.Post, error) {
-	// return r.Ds.PostgresqlDB.GetPosts()
-	return nil, nil
+	return r.Ds.PostgresqlDB.GetPosts()
 }

@@ -7,26 +7,28 @@ import (
 )
 
 type UserDBInterface interface {
-	CreateUser(user *model.User) error
+	CreateUser(user *model.User) (int64, error)
 	QueryUser(email string) (*model.User, error)
 }
 
-func (pgdb *PostgresqlDB) CreateUser(user *model.User) error {
-	_, err := pgdb.DB.Exec(context.Background(), `
+func (pgdb *PostgresqlDB) CreateUser(user *model.User) (int64, error) {
+	var userID int64
+	err := pgdb.DB.QueryRow(context.Background(), `
 		INSERT INTO users (
 			"email",
 			"password"
 		)
 		VALUES ($1, $2)
+		RETURNING id
 	`,
 		user.Email,
 		user.Password,
-	)
+	).Scan(&userID)
 	if err != nil {
-		return fmt.Errorf("failed to create user: %v", err)
+		return 0, fmt.Errorf("failed to create user: %v", err)
 	}
 
-	return nil
+	return userID, nil
 
 }
 
