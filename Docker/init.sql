@@ -18,6 +18,6 @@ CREATE TABLE likes (
     post_id SERIAL NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (post_id) REFERENCES posts(id),
-    ADD CONSTRAINT user_like_post UNIQUE (user_id, post_id)
+    CONSTRAINT user_like_post UNIQUE (user_id, post_id)
 );
 
