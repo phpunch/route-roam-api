@@ -12,6 +12,7 @@ import (
 type Service interface {
 	fileService
 	postService
+	authService
 	RegisterUser(email string, password string) (int64, error)
 	LoginUser(email string, password string) error
 }
