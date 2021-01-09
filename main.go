@@ -6,6 +6,7 @@ import (
 	"github.com/phpunch/route-roam-api/controller"
 	"github.com/phpunch/route-roam-api/infrastructure/db"
 	"github.com/phpunch/route-roam-api/log"
+	"github.com/phpunch/route-roam-api/middleware"
 	"github.com/phpunch/route-roam-api/repository"
 	"github.com/phpunch/route-roam-api/service"
 	"github.com/spf13/viper"
@@ -57,23 +58,28 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	repository := repository.NewRepository(dbHandler)
-	service := service.NewService(repository)
-	controller := controller.NewController(service)
+	r := repository.NewRepository(dbHandler)
+	s := service.NewService(r)
+	c := controller.NewController(s)
+	mw := middleware.New(s)
 
 	router := gin.Default()
 
 	router.Use(GinMiddleware("http://localhost:3000"))
 
-	router.POST("/register", controller.RegisterUser)
-	router.POST("/login", controller.LoginUser)
-	router.POST("/file", controller.UploadFiles)
-	router.GET("/file/*filepath", controller.GetFile)
-	router.POST("/post", controller.CreatePost)
-	router.POST("/like", controller.LikePost)
-	router.POST("/unlike", controller.UnlikePost)
-	router.GET("/posts", controller.GetPosts)
-	router.POST("/comment", controller.CommentPost)
+	router.POST("/register", c.RegisterUser)
+	router.POST("/login", c.LoginUser)
+
+	router.Use(mw.AuthorizeToken())
+	{
+		router.POST("/file", c.UploadFiles)
+		router.GET("/file/*filepath", c.GetFile)
+		router.POST("/post", c.CreatePost)
+		router.POST("/like", c.LikePost)
+		router.POST("/unlike", c.UnlikePost)
+		router.GET("/posts", c.GetPosts)
+		router.POST("/comment", c.CommentPost)
+	}
 
 	router.Run()
 }

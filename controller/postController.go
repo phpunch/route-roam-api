@@ -18,17 +18,7 @@ type postController interface {
 }
 
 func (c *controller) CreatePost(ctx *gin.Context) {
-	tokenAuth, err := c.service.ExtractTokenMetadata(ctx.Request)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
-		return
-	}
-	userID, err := c.service.FetchAuth(tokenAuth)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
-		return
-	}
-
+	userID := ctx.GetInt64("user_id")
 	// userIDStr, found := ctx.GetPostForm("userId")
 	// if !found {
 	// 	ctx.Status(http.StatusUnprocessableEntity)

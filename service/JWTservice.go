@@ -3,11 +3,11 @@ package service
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/phpunch/route-roam-api/middleware"
 	"github.com/twinj/uuid"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -85,7 +85,7 @@ func (s *service) CreateAuth(userid int64, td *TokenDetails) error {
 }
 
 func (s *service) ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
-	token, err := middleware.VerifyToken(r)
+	token, err := VerifyToken(r)
 	if err != nil {
 		return nil, err
 	}
@@ -113,4 +113,38 @@ func (s *service) FetchAuth(authD *AccessDetails) (int64, error) {
 		return 0, err
 	}
 	return userID, nil
+}
+
+func ExtractToken(r *http.Request) string {
+	bearToken := r.Header.Get("Authorization")
+	strArr := strings.Split(bearToken, " ")
+	if len(strArr) == 2 {
+		return strArr[1]
+	}
+	return ""
+}
+
+func VerifyToken(r *http.Request) (*jwt.Token, error) {
+	tokenString := ExtractToken(r)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte("secret_here"), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("parse token error: %v", err)
+	}
+	return token, nil
+}
+
+func TokenValid(r *http.Request) error {
+	token, err := VerifyToken(r)
+	if err != nil {
+		return err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return err
+	}
+	return nil
 }
