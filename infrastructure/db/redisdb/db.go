@@ -10,7 +10,7 @@ import (
 )
 
 type DB interface {
-	Set(key string, value interface{}, expDuration time.Time) error
+	Set(key string, value interface{}, expDuration time.Duration) error
 	Get(key string) ([]map[string]interface{}, error)
 }
 
@@ -36,13 +36,13 @@ func New(config *Config) DB {
 	return &redisDB{Conn: conn}
 }
 
-func (r *redisDB) Set(key string, value interface{}, expDuration time.Time) error {
-	jsonData, err := json.Marshal(value)
-	if err != nil {
-		return fmt.Errorf("could not marshal json : %v", err)
-	}
-
-	_, err = r.Conn.Do("SET", key, jsonData, expDuration)
+func (r *redisDB) Set(key string, value interface{}, expDuration time.Duration) error {
+	// jsonData, err := json.Marshal(value)
+	// if err != nil {
+	// 	return fmt.Errorf("could not marshal json : %v", err)
+	// }
+	secs := int(expDuration.Seconds())
+	_, err := r.Conn.Do("SETEX", key, secs, value)
 	if err != nil {
 		return fmt.Errorf("could not set data : %v", err)
 	}

@@ -3,11 +3,13 @@ package repository
 import (
 	"github.com/phpunch/route-roam-api/infrastructure/db"
 	"github.com/phpunch/route-roam-api/model"
+	"time"
 )
 
 type Repository interface {
 	fileRepository
 	AddUser(user *model.User) (int64, error)
+	SaveToken(uuid string, userID string, expDuration time.Duration) error
 	GetUser(email string) (*model.User, error)
 	CreatePost(post *model.Post) error
 	LikePost(like *model.Like) error
@@ -29,12 +31,14 @@ func NewRepository(ds *db.DB) Repository {
 func (r *repository) AddUser(user *model.User) (int64, error) {
 	return r.Ds.PostgresqlDB.CreateUser(user)
 }
+func (r *repository) SaveToken(uuid string, userID string, expDuration time.Duration) error {
+	return r.Ds.RedisDB.Set(uuid, userID, expDuration)
+}
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
 }
 func (r *repository) CreatePost(post *model.Post) error {
 	return r.Ds.PostgresqlDB.CreatePost(post)
-	return nil
 }
 func (r *repository) LikePost(like *model.Like) error {
 	return r.Ds.PostgresqlDB.LikePost(like)

@@ -34,9 +34,16 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
+	err = c.service.CreateAuth(userID, token)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"token":   token,
+		"message":       "success",
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
 	})
 }
 
