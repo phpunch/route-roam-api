@@ -11,6 +11,7 @@ import (
 type DB interface {
 	Set(key string, value interface{}, expDuration time.Duration) error
 	Get(key string) (int64, error)
+	Del(key string) (int64, error)
 }
 
 type redisDB struct {
@@ -53,6 +54,14 @@ func (r *redisDB) Get(key string) (int64, error) {
 	val, err := redis.Int64(r.Conn.Do("GET", key))
 	if err != nil {
 		return 0, fmt.Errorf("could not get data : %v", err)
+	}
+	return val, nil
+}
+
+func (r *redisDB) Del(key string) (int64, error) {
+	val, err := redis.Int64(r.Conn.Do("DEL", key))
+	if err != nil {
+		return 0, fmt.Errorf("could not del data : %v", err)
 	}
 	return val, nil
 }

@@ -9,6 +9,7 @@ import (
 type authController interface {
 	RegisterUser(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
+	LogoutUser(ctx *gin.Context)
 }
 
 func (c *controller) RegisterUser(ctx *gin.Context) {
@@ -69,4 +70,14 @@ func (c *controller) LoginUser(ctx *gin.Context) {
 		"message": "success",
 	})
 	return
+}
+
+func (c *controller) LogoutUser(ctx *gin.Context) {
+	accessUUID := ctx.GetString("access_uuid")
+	deleted, delErr := c.service.DeleteAuth(accessUUID)
+	if delErr != nil || deleted == 0 {
+		ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	ctx.JSON(http.StatusOK, "Successfully logged out")
 }

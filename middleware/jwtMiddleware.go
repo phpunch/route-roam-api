@@ -19,16 +19,17 @@ func New(service service.Service) *middleware {
 
 func (m *middleware) AuthorizeToken() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		tokenAuth, err := m.service.ExtractTokenMetadata(ctx.Request)
+		ad, err := m.service.ExtractTokenMetadata(ctx.Request)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
 			return
 		}
-		userID, err := m.service.FetchAuth(tokenAuth)
+		userID, err := m.service.FetchAuth(ad)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
 			return
 		}
 		ctx.Set("user_id", userID)
+		ctx.Set("access_uuid", ad.AccessUUID)
 	}
 }

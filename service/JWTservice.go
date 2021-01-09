@@ -16,6 +16,7 @@ type authService interface {
 	CreateAuth(userid int64, td *TokenDetails) error
 	ExtractTokenMetadata(r *http.Request) (*AccessDetails, error)
 	FetchAuth(authD *AccessDetails) (int64, error)
+	DeleteAuth(uuid string) (int64, error)
 }
 
 // Inspired by this blog
@@ -113,6 +114,14 @@ func (s *service) FetchAuth(authD *AccessDetails) (int64, error) {
 		return 0, err
 	}
 	return userID, nil
+}
+
+func (s *service) DeleteAuth(uuid string) (int64, error) {
+	deleted, err := s.repository.DeleteToken(uuid)
+	if err != nil {
+		return 0, err
+	}
+	return deleted, nil
 }
 
 func ExtractToken(r *http.Request) string {

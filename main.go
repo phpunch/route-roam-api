@@ -54,6 +54,7 @@ func main() {
 
 	router.Use(mw.AuthorizeToken())
 	{
+		router.POST("/logout", c.LogoutUser)
 		router.POST("/file", c.UploadFiles)
 		router.GET("/file/*filepath", c.GetFile)
 		router.POST("/post", c.CreatePost)

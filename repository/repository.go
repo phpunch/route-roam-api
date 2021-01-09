@@ -11,6 +11,7 @@ type Repository interface {
 	AddUser(user *model.User) (int64, error)
 	SaveToken(uuid string, userID string, expDuration time.Duration) error
 	FetchToken(uuid string) (int64, error)
+	DeleteToken(uuid string) (int64, error)
 	GetUser(email string) (*model.User, error)
 	CreatePost(post *model.Post) error
 	LikePost(like *model.Like) error
@@ -37,6 +38,9 @@ func (r *repository) SaveToken(uuid string, userID string, expDuration time.Dura
 }
 func (r *repository) FetchToken(uuid string) (int64, error) {
 	return r.Ds.RedisDB.Get(uuid)
+}
+func (r *repository) DeleteToken(uuid string) (int64, error) {
+	return r.Ds.RedisDB.Del(uuid)
 }
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
