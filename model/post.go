@@ -5,5 +5,5 @@ type Post struct {
 	UserID   int
 	Text     *string
 	ImageURL []string `gorm:"type:text[]"`
-	Likes    int
+	LikedBy  []int
 }

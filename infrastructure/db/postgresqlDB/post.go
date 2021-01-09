@@ -57,9 +57,9 @@ func (pgdb *PostgresqlDB) UnlikePost(like *model.Like) error {
 func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 	var result []model.Post
 	rows, err := pgdb.DB.Query(context.Background(), `
-		select id, user_id, text, image_url,
-		(select count(*) from likes where likes.post_id = posts.id) as likes
-		from posts
+		select p.id, p.user_id, p.text, p.image_url, array_agg(l.user_id) as liked_by from posts p
+		join likes l on p.id = l.post_id
+		group by p.id
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query user: %v", err)
@@ -68,7 +68,7 @@ func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 
 	for rows.Next() {
 		var post model.Post
-		err = rows.Scan(&post.ID, &post.UserID, &post.Text, &post.ImageURL, &post.Likes)
+		err = rows.Scan(&post.ID, &post.UserID, &post.Text, &post.ImageURL, &post.LikedBy)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
