@@ -10,6 +10,7 @@ type Repository interface {
 	fileRepository
 	AddUser(user *model.User) (int64, error)
 	SaveToken(uuid string, userID string, expDuration time.Duration) error
+	FetchToken(uuid string) (int64, error)
 	GetUser(email string) (*model.User, error)
 	CreatePost(post *model.Post) error
 	LikePost(like *model.Like) error
@@ -33,6 +34,9 @@ func (r *repository) AddUser(user *model.User) (int64, error) {
 }
 func (r *repository) SaveToken(uuid string, userID string, expDuration time.Duration) error {
 	return r.Ds.RedisDB.Set(uuid, userID, expDuration)
+}
+func (r *repository) FetchToken(uuid string) (int64, error) {
+	return r.Ds.RedisDB.Get(uuid)
 }
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)

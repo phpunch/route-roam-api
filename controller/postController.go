@@ -18,20 +18,31 @@ type postController interface {
 }
 
 func (c *controller) CreatePost(ctx *gin.Context) {
-	userIDStr, found := ctx.GetPostForm("userId")
-	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+	tokenAuth, err := c.service.ExtractTokenMetadata(ctx.Request)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
 		return
 	}
+	userID, err := c.service.FetchAuth(tokenAuth)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, fmt.Sprintf("unauthorized: %v", err))
+		return
+	}
+
+	// userIDStr, found := ctx.GetPostForm("userId")
+	// if !found {
+	// 	ctx.Status(http.StatusUnprocessableEntity)
+	// 	return
+	// }
 	var textPtr *string
 
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
-		})
-		return
-	}
+	// userID, err := strconv.Atoi(userIDStr)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+	// 		"message": "userID is not number",
+	// 	})
+	// 	return
+	// }
 
 	// upload images
 	form, _ := ctx.MultipartForm()
@@ -41,7 +52,8 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	i := 0
 	for _, file := range files {
 		log.Log.Infof("upload file path: %s", file.Filename)
-		objectName := userIDStr + "/" + time.Now().Format("20060102") + "/" + file.Filename
+		objectName := strconv.Itoa(int(userID)) + "/" + time.Now().Format("20060102") + "/" + file.Filename
+		log.Log.Infof("ovjectname: %s", objectName)
 		filepath, err := c.service.UploadFile(ctx, objectName, file, "image")
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, fmt.Errorf("Failed upload file"))
@@ -51,7 +63,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	}
 
 	// save metadata
-	if err := c.service.CreatePost(userID, textPtr, filePathMinio); err != nil {
+	if err := c.service.CreatePost(int(userID), textPtr, filePathMinio); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})

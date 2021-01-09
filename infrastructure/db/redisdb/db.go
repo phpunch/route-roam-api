@@ -1,7 +1,6 @@
 package redisdb
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/phpunch/route-roam-api/log"
 	"time"
@@ -11,7 +10,7 @@ import (
 
 type DB interface {
 	Set(key string, value interface{}, expDuration time.Duration) error
-	Get(key string) ([]map[string]interface{}, error)
+	Get(key string) (int64, error)
 }
 
 type redisDB struct {
@@ -50,16 +49,10 @@ func (r *redisDB) Set(key string, value interface{}, expDuration time.Duration) 
 	return nil
 }
 
-func (r *redisDB) Get(key string) ([]map[string]interface{}, error) {
-	val, err := redis.String(r.Conn.Do("GET", key))
+func (r *redisDB) Get(key string) (int64, error) {
+	val, err := redis.Int64(r.Conn.Do("GET", key))
 	if err != nil {
-		return nil, fmt.Errorf("could not get data : %v", err)
+		return 0, fmt.Errorf("could not get data : %v", err)
 	}
-	var result []map[string]interface{}
-	err = json.Unmarshal([]byte(val), &result)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal json : %v", err)
-	}
-
-	return result, nil
+	return val, nil
 }
