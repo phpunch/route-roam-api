@@ -24,5 +24,9 @@
     "SecretAccessKey": "route-roam",
     "UseSSL": false,
     "BucketName": "image"
+  },
+
+  "Redis": {
+    "Address": "localhost:6379"
   }
 }

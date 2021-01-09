@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/phpunch/route-roam-api/infrastructure/db/minioDB"
 	"github.com/phpunch/route-roam-api/infrastructure/db/postgresqlDB"
+	"github.com/phpunch/route-roam-api/infrastructure/db/redisdb"
 	"github.com/phpunch/route-roam-api/log"
 )
 
 type DB struct {
 	PostgresqlDB postgresqlDB.DB
 	MinioDB      miniodb.DB
+	RedisDB      redisdb.DB
 }
 
 func NewDB(logger log.Logger) (*DB, error) {
@@ -34,8 +36,15 @@ func NewDB(logger log.Logger) (*DB, error) {
 		return nil, err
 	}
 
+	redisDBConfig, err := redisdb.InitConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to init minio config: %v", err)
+	}
+	redisDB := redisdb.New(redisDBConfig)
+
 	return &DB{
 		PostgresqlDB: postgresqlDB,
 		MinioDB:      minioDB,
+		RedisDB:      redisDB,
 	}, nil
 }
