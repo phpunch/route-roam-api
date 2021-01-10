@@ -26,14 +26,6 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 		return
 	}
 
-	// userID, err := strconv.Atoi(userIDStr)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-	// 		"message": "userID is not number",
-	// 	})
-	// 	return
-	// }
-
 	// upload images
 	form, _ := ctx.MultipartForm()
 	files := form.File["datasetPath[]"]
@@ -53,7 +45,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	}
 
 	// save metadata
-	post, err := c.service.CreatePost(int64(userID), text, filePathMinio)
+	post, err := c.service.CreatePost(userID, text, filePathMinio)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
@@ -67,21 +59,11 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 
 }
 func (c *controller) LikePost(ctx *gin.Context) {
-	userIDStr, found := ctx.GetPostForm("userId")
-	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
-		return
-	}
+	userID := ctx.GetInt64("user_id")
+
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
-		return
-	}
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
-		})
 		return
 	}
 	postID, err := strconv.Atoi(postIDStr)
@@ -92,7 +74,7 @@ func (c *controller) LikePost(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.LikePost(userID, postID); err != nil {
+	if err := c.service.LikePost(userID, int64(postID)); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
@@ -104,31 +86,21 @@ func (c *controller) LikePost(ctx *gin.Context) {
 }
 
 func (c *controller) UnlikePost(ctx *gin.Context) {
-	userIDStr, found := ctx.GetPostForm("userId")
-	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
-		return
-	}
+	userID := ctx.GetInt64("user_id")
+
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
-		})
-		return
-	}
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
+			"message": "postId is not number",
 		})
 		return
 	}
-	if err := c.service.UnlikePost(userID, postID); err != nil {
+	if err := c.service.UnlikePost(userID, int64(postID)); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
@@ -141,11 +113,8 @@ func (c *controller) UnlikePost(ctx *gin.Context) {
 }
 
 func (c *controller) CommentPost(ctx *gin.Context) {
-	userIDStr, found := ctx.GetPostForm("userId")
-	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
-		return
-	}
+	userID := ctx.GetInt64("user_id")
+
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
 		ctx.Status(http.StatusUnprocessableEntity)
@@ -156,14 +125,6 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 		ctx.Status(http.StatusUnprocessableEntity)
 		return
 	}
-
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
-		})
-		return
-	}
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -171,7 +132,7 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := c.service.CommentPost(userID, postID, text); err != nil {
+	if err := c.service.CommentPost(userID, int64(postID), text); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})

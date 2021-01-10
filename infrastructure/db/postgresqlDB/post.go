@@ -52,6 +52,17 @@ func (pgdb *PostgresqlDB) LikePost(like *model.Like) error {
 	return nil
 }
 func (pgdb *PostgresqlDB) UnlikePost(like *model.Like) error {
+	commandTag, _ := pgdb.DB.Exec(context.Background(), `
+		delete from likes 
+		where user_id=$1 and post_id=$2
+`,
+		like.UserID,
+		like.PostID,
+	)
+	if commandTag.RowsAffected() != 1 {
+		return fmt.Errorf("failed to delete row")
+	}
+
 	return nil
 }
 

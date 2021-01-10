@@ -1,6 +1,6 @@
 package model
 
 type Like struct {
-	UserID int
-	PostID int
+	UserID int64
+	PostID int64
 }
