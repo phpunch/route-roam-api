@@ -47,7 +47,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(middleware.GinMiddleware("http://localhost:3000"))
+	router.Use(middleware.CorMiddleware("http://localhost:3000"))
 
 	router.POST("/register", c.RegisterUser)
 	router.POST("/login", c.LoginUser)
