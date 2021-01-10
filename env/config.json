@@ -9,6 +9,9 @@
   "level": "debug",
   "enableCaller": "true",
 
+  "ACCESS_SECRET": "soidvnweijnuvnsviod",
+  "REFRESH_SECRET": "sdklfjhsdkflsahdflk",
+
   "PostgreSQL": {
     "DBHost": "localhost",
     "DBPort": "5432",

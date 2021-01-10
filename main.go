@@ -51,6 +51,7 @@ func main() {
 
 	router.POST("/register", c.RegisterUser)
 	router.POST("/login", c.LoginUser)
+	router.POST("/token/refresh", c.Refresh)
 
 	router.Use(mw.AuthorizeToken())
 	{
