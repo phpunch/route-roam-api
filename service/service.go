@@ -14,7 +14,7 @@ type Service interface {
 	postService
 	authService
 	RegisterUser(email string, password string) (int64, error)
-	LoginUser(email string, password string) error
+	LoginUser(email string, password string) (int64, error)
 }
 
 type service struct {
@@ -44,21 +44,21 @@ func (s *service) RegisterUser(
 
 func (s *service) LoginUser(
 	email string, password string,
-) error {
+) (int64, error) {
 	email = strings.TrimSpace(email)
 	password = strings.TrimSpace(password)
 
 	user, err := s.repository.GetUser(email)
 	if user == nil {
-		return fmt.Errorf("user not found")
+		return 0, fmt.Errorf("user not found")
 	}
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if !comparePasswords(user.Password, password) {
-		return fmt.Errorf("Invalid password")
+		return 0, fmt.Errorf("Invalid password")
 	}
-	return nil
+	return int64(user.ID), nil
 }
 
 func hashAndSalt(pwd []byte) string {

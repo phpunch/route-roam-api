@@ -63,16 +63,30 @@ func (c *controller) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.LoginUser(email, password); err != nil {
+	userID, err := c.service.LoginUser(email, password)
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
 		return
 	}
+
+	token, err := c.service.CreateToken(userID)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	err = c.service.CreateAuth(userID, token)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
+		"message":       "success",
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
 	})
-	return
 }
 
 func (c *controller) LogoutUser(ctx *gin.Context) {
