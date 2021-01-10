@@ -17,7 +17,8 @@ type authService interface {
 	ExtractTokenMetadata(r *http.Request) (*AccessDetails, error)
 	FetchAuth(authD *AccessDetails) (int64, error)
 	DeleteAuth(uuid string) (int64, error)
-	VerifyToken2(tokenString string, tokenType string) (*jwt.Token, error)
+	VerifyToken(tokenString string, tokenType string) (*jwt.Token, error)
+	RefreshToken(token *jwt.Token) (map[string]string, error)
 }
 
 // Inspired by this blog
@@ -87,7 +88,7 @@ func (s *service) CreateAuth(userid int64, td *TokenDetails) error {
 
 func (s *service) ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	tokenString := ExtractToken(r)
-	token, err := s.VerifyToken2(tokenString, "ACCESS_SECRET")
+	token, err := s.VerifyToken(tokenString, "ACCESS_SECRET")
 	if err != nil {
 		return nil, err
 	}
@@ -134,21 +135,7 @@ func ExtractToken(r *http.Request) string {
 	return ""
 }
 
-// func VerifyToken(r *http.Request) (*jwt.Token, error) {
-// 	tokenString := ExtractToken(r)
-// 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-// 		}
-// 		return []byte("secret_here"), nil
-// 	})
-// 	if err != nil {
-// 		return nil, fmt.Errorf("parse token error: %v", err)
-// 	}
-// 	return token, nil
-// }
-
-func (s *service) VerifyToken2(tokenString string, tokenType string) (*jwt.Token, error) {
+func (s *service) VerifyToken(tokenString string, tokenType string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -165,13 +152,40 @@ func (s *service) VerifyToken2(tokenString string, tokenType string) (*jwt.Token
 	return token, nil
 }
 
-// func TokenValid(r *http.Request) error {
-// 	token, err := VerifyToken(r)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-// 		return err
-// 	}
-// 	return nil
-// }
+func (s *service) RefreshToken(token *jwt.Token) (map[string]string, error) {
+	//Since token is valid, get the uuid:
+	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
+	if ok && token.Valid {
+		refreshUUID, ok := claims["refresh_uuid"].(string) //convert the interface to string
+		if !ok {
+			return nil, fmt.Errorf("unauthorized")
+		}
+		userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("unauthorized: %v", err)
+		}
+		//Delete the previous Refresh Token
+		deleted, delErr := s.DeleteAuth(refreshUUID)
+		if delErr != nil || deleted == 0 { //if any goes wrong
+			return nil, fmt.Errorf("unauthorized: %v", delErr)
+		}
+		//Create new pairs of refresh and access tokens
+		td, createErr := s.CreateToken(userID)
+		if createErr != nil {
+			return nil, fmt.Errorf("unauthorized: %v", createErr)
+		}
+		//save the tokens metadata to redis
+		saveErr := s.CreateAuth(userID, td)
+		if saveErr != nil {
+			return nil, fmt.Errorf("unauthorized: %v", saveErr)
+		}
+		tokens := map[string]string{
+			"access_token":  td.AccessToken,
+			"refresh_token": td.RefreshToken,
+		}
+		return tokens, nil
+	} else {
+		return nil, fmt.Errorf("refresh expired")
+
+	}
+}
