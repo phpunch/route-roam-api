@@ -7,31 +7,32 @@ import (
 )
 
 type PostDBInterface interface {
-	CreatePost(post *model.Post) error
+	CreatePost(post *model.Post) (int64, error)
 	LikePost(like *model.Like) error
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
 }
 
-func (pgdb *PostgresqlDB) CreatePost(post *model.Post) error {
-	_, err := pgdb.DB.Exec(context.Background(), `
+func (pgdb *PostgresqlDB) CreatePost(post *model.Post) (int64, error) {
+	var postID int64
+	err := pgdb.DB.QueryRow(context.Background(), `
 	INSERT INTO posts (
 		"user_id",
 		"text",
 		"image_url"
 	)
 	VALUES ($1, $2, $3)
+	RETURNING id
 `,
 		post.UserID,
 		post.Text,
 		post.ImageURL,
-	)
+	).Scan(&postID)
 	if err != nil {
-		return fmt.Errorf("failed to create post: %v", err)
+		return 0, fmt.Errorf("failed to create post: %v", err)
 	}
 
-	return nil
-
+	return postID, nil
 }
 func (pgdb *PostgresqlDB) LikePost(like *model.Like) error {
 	_, err := pgdb.DB.Exec(context.Background(), `

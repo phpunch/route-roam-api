@@ -13,7 +13,7 @@ type Repository interface {
 	FetchToken(uuid string) (int64, error)
 	DeleteToken(uuid string) (int64, error)
 	GetUser(email string) (*model.User, error)
-	CreatePost(post *model.Post) error
+	CreatePost(post *model.Post) (int64, error)
 	LikePost(like *model.Like) error
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
@@ -45,7 +45,7 @@ func (r *repository) DeleteToken(uuid string) (int64, error) {
 func (r *repository) GetUser(email string) (*model.User, error) {
 	return r.Ds.PostgresqlDB.QueryUser(email)
 }
-func (r *repository) CreatePost(post *model.Post) error {
+func (r *repository) CreatePost(post *model.Post) (int64, error) {
 	return r.Ds.PostgresqlDB.CreatePost(post)
 }
 func (r *repository) LikePost(like *model.Like) error {

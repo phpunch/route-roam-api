@@ -5,20 +5,25 @@ import (
 )
 
 type postService interface {
-	CreatePost(userId int, text *string, imageURLs []string) error
+	CreatePost(userId int64, text string, imageURLs []string) (*model.Post, error)
 	LikePost(userId int, postId int) error
 	UnlikePost(userId int, postId int) error
 	CommentPost(userId int, postId int, text string) error
 	GetPosts() ([]model.Post, error)
 }
 
-func (s *service) CreatePost(userId int, text *string, imageURLs []string) error {
+func (s *service) CreatePost(userId int64, text string, imageURLs []string) (*model.Post, error) {
 	post := &model.Post{
 		UserID:   userId,
 		Text:     text,
 		ImageURL: imageURLs,
 	}
-	return s.repository.CreatePost(post)
+	postID, err := s.repository.CreatePost(post)
+	if err != nil {
+		return nil, err
+	}
+	post.ID = postID
+	return post, nil
 }
 func (s *service) LikePost(userId int, postId int) error {
 	like := &model.Like{

@@ -19,12 +19,12 @@ type postController interface {
 
 func (c *controller) CreatePost(ctx *gin.Context) {
 	userID := ctx.GetInt64("user_id")
-	// userIDStr, found := ctx.GetPostForm("userId")
-	// if !found {
-	// 	ctx.Status(http.StatusUnprocessableEntity)
-	// 	return
-	// }
-	var textPtr *string
+
+	text, found := ctx.GetPostForm("text")
+	if !found {
+		ctx.Status(http.StatusUnprocessableEntity)
+		return
+	}
 
 	// userID, err := strconv.Atoi(userIDStr)
 	// if err != nil {
@@ -53,15 +53,16 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	}
 
 	// save metadata
-	if err := c.service.CreatePost(int(userID), textPtr, filePathMinio); err != nil {
+	post, err := c.service.CreatePost(int64(userID), text, filePathMinio)
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"message":  "success",
-		"filepath": filePathMinio,
+		"message": "success",
+		"post":    post,
 	})
 
 }
