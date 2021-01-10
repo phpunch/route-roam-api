@@ -10,6 +10,7 @@ type postService interface {
 	UnlikePost(userId int64, postId int64) error
 	GetPosts() ([]model.Post, error)
 	CommentPost(userId int64, postId int64, text string) (*model.Comment, error)
+	GetCommentsByPostID(postId int64) ([]model.Comment, error)
 }
 
 func (s *service) CreatePost(userId int64, text string, imageURLs []string) (*model.Post, error) {
@@ -55,4 +56,12 @@ func (s *service) CommentPost(userId int64, postId int64, text string) (*model.C
 	}
 	comment.ID = commentID
 	return comment, nil
+}
+
+func (s *service) GetCommentsByPostID(postId int64) ([]model.Comment, error) {
+	comments, err := s.repository.GetCommentsByPostID(postId)
+	if err != nil {
+		return nil, err
+	}
+	return comments, nil
 }

@@ -18,6 +18,7 @@ type Repository interface {
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
 	CommentPost(comment *model.Comment) (int64, error)
+	GetCommentsByPostID(postID int64) ([]model.Comment, error)
 }
 
 type repository struct {
@@ -59,4 +60,7 @@ func (r *repository) GetPosts() ([]model.Post, error) {
 }
 func (r *repository) CommentPost(comment *model.Comment) (int64, error) {
 	return r.Ds.PostgresqlDB.CreateComment(comment)
+}
+func (r *repository) GetCommentsByPostID(postID int64) ([]model.Comment, error) {
+	return r.Ds.PostgresqlDB.GetCommentsByPostID(postID)
 }

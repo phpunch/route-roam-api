@@ -63,6 +63,7 @@ func main() {
 		router.POST("/unlike", c.UnlikePost)
 		router.GET("/posts", c.GetPosts)
 		router.POST("/comment", c.CommentPost)
+		router.GET("/comment/:postId", c.GetCommentsByPostID)
 	}
 
 	router.Run()
