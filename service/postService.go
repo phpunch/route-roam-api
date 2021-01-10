@@ -8,8 +8,8 @@ type postService interface {
 	CreatePost(userId int64, text string, imageURLs []string) (*model.Post, error)
 	LikePost(userId int64, postId int64) error
 	UnlikePost(userId int64, postId int64) error
-	CommentPost(userId int64, postId int64, text string) error
 	GetPosts() ([]model.Post, error)
+	CommentPost(userId int64, postId int64, text string) (*model.Comment, error)
 }
 
 func (s *service) CreatePost(userId int64, text string, imageURLs []string) (*model.Post, error) {
@@ -43,6 +43,16 @@ func (s *service) GetPosts() ([]model.Post, error) {
 	return s.repository.GetPosts()
 }
 
-func (s *service) CommentPost(userId int64, postId int64, text string) error {
-	return nil
+func (s *service) CommentPost(userId int64, postId int64, text string) (*model.Comment, error) {
+	comment := &model.Comment{
+		PostID: postId,
+		UserID: userId,
+		Text:   text,
+	}
+	commentID, err := s.repository.CommentPost(comment)
+	if err != nil {
+		return nil, err
+	}
+	comment.ID = commentID
+	return comment, nil
 }

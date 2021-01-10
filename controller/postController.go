@@ -22,7 +22,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 
 	text, found := ctx.GetPostForm("text")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, "text is not found")
 		return
 	}
 
@@ -122,7 +122,7 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 	}
 	text, found := ctx.GetPostForm("text")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, "text is not found")
 		return
 	}
 	postID, err := strconv.Atoi(postIDStr)
@@ -132,7 +132,8 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := c.service.CommentPost(userID, int64(postID), text); err != nil {
+	comment, err := c.service.CommentPost(userID, int64(postID), text)
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
 		})
@@ -140,6 +141,7 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
+		"comment": comment,
 	})
 }
 

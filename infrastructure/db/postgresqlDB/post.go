@@ -11,6 +11,7 @@ type PostDBInterface interface {
 	LikePost(like *model.Like) error
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
+	CreateComment(comment *model.Comment) (int64, error)
 }
 
 func (pgdb *PostgresqlDB) CreatePost(post *model.Post) (int64, error) {
@@ -87,4 +88,26 @@ func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 		result = append(result, post)
 	}
 	return result, nil
+}
+
+func (pgdb *PostgresqlDB) CreateComment(comment *model.Comment) (int64, error) {
+	var commentID int64
+	err := pgdb.DB.QueryRow(context.Background(), `
+		INSERT INTO comments (
+			"post_id",
+			"user_id",
+			"text"
+		)
+		VALUES ($1, $2, $3)
+		RETURNING id
+`,
+		comment.PostID,
+		comment.UserID,
+		comment.Text,
+	).Scan(&commentID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create comment: %v", err)
+	}
+
+	return commentID, nil
 }

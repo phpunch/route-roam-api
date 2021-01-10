@@ -21,3 +21,12 @@ CREATE TABLE likes (
     CONSTRAINT user_like_post UNIQUE (user_id, post_id)
 );
 
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    user_id SERIAL NOT NULL,
+    post_id SERIAL NOT NULL,
+    text varchar(256),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (post_id) REFERENCES posts(id)
+);
+
