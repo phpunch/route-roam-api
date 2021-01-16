@@ -15,11 +15,13 @@ type DB interface {
 }
 
 type redisDB struct {
-	Conn redis.Conn
+	pool *redis.Pool
 }
 
 func NewPool(config *Config) *redis.Pool {
 	return &redis.Pool{
+		MaxActive: 4000,
+		MaxIdle:   100,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", config.Address)
 			if err != nil {
@@ -32,8 +34,7 @@ func NewPool(config *Config) *redis.Pool {
 
 func New(config *Config) DB {
 	pool := NewPool(config)
-	conn := pool.Get()
-	return &redisDB{Conn: conn}
+	return &redisDB{pool: pool}
 }
 
 func (r *redisDB) Set(key string, value interface{}, expDuration time.Duration) error {
@@ -42,7 +43,9 @@ func (r *redisDB) Set(key string, value interface{}, expDuration time.Duration) 
 	// 	return fmt.Errorf("could not marshal json : %v", err)
 	// }
 	secs := int(expDuration.Seconds())
-	_, err := r.Conn.Do("SETEX", key, secs, value)
+	conn := r.pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("SETEX", key, secs, value)
 	if err != nil {
 		return fmt.Errorf("could not set data : %v", err)
 	}
@@ -51,7 +54,9 @@ func (r *redisDB) Set(key string, value interface{}, expDuration time.Duration) 
 }
 
 func (r *redisDB) Get(key string) (int64, error) {
-	val, err := redis.Int64(r.Conn.Do("GET", key))
+	conn := r.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int64(conn.Do("GET", key))
 	if err != nil {
 		return 0, fmt.Errorf("could not get data : %v", err)
 	}
@@ -59,7 +64,9 @@ func (r *redisDB) Get(key string) (int64, error) {
 }
 
 func (r *redisDB) Del(key string) (int64, error) {
-	val, err := redis.Int64(r.Conn.Do("DEL", key))
+	conn := r.pool.Get()
+	defer conn.Close()
+	val, err := redis.Int64(conn.Do("DEL", key))
 	if err != nil {
 		return 0, fmt.Errorf("could not del data : %v", err)
 	}
