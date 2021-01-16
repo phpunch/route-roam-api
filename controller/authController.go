@@ -52,12 +52,16 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 func (c *controller) LoginUser(ctx *gin.Context) {
 	email, found := ctx.GetPostForm("email")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "email not found",
+		})
 		return
 	}
 	password, found := ctx.GetPostForm("password")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "password not found",
+		})
 		return
 	}
 
