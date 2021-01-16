@@ -31,8 +31,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 	form, _ := ctx.MultipartForm()
 	files := form.File["datasetPath[]"]
 
-	filePathMinio := make([]string, 5)
-	i := 0
+	filePathMinio := []string{}
 	for _, file := range files {
 		log.Log.Infof("upload file path: %s", file.Filename)
 		objectName := strconv.Itoa(int(userID)) + "/" + time.Now().Format("20060102") + "/" + file.Filename
@@ -41,8 +40,7 @@ func (c *controller) CreatePost(ctx *gin.Context) {
 		if err != nil {
 			ctx.JSON(http.StatusForbidden, fmt.Errorf("Failed upload file"))
 		}
-		filePathMinio[i] = filepath
-		i = i + 1
+		filePathMinio = append(filePathMinio, filepath)
 	}
 
 	// save metadata
