@@ -52,12 +52,12 @@ func main() {
 	router.POST("/register", c.RegisterUser)
 	router.POST("/login", c.LoginUser)
 	router.POST("/token/refresh", c.Refresh)
+	router.GET("/file/*filepath", c.GetFile)
 
 	router.Use(mw.AuthorizeToken())
 	{
 		router.POST("/logout", c.LogoutUser)
 		router.POST("/file", c.UploadFiles)
-		router.GET("/file/*filepath", c.GetFile)
 		router.POST("/post", c.CreatePost)
 		router.POST("/like", c.LikePost)
 		router.POST("/unlike", c.UnlikePost)
