@@ -13,8 +13,8 @@ type Service interface {
 	fileService
 	postService
 	authService
-	RegisterUser(email string, password string) (int64, error)
-	LoginUser(email string, password string) (int64, error)
+	RegisterUser(username string, password string) (int64, error)
+	LoginUser(username string, password string) (int64, error)
 }
 
 type service struct {
@@ -28,14 +28,14 @@ func NewService(r repository.Repository) Service {
 }
 
 func (s *service) RegisterUser(
-	email string, password string,
+	username string, password string,
 ) (int64, error) {
-	email = strings.TrimSpace(email)
+	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
 
 	hashedPwd := hashAndSalt([]byte(password))
 	user := &model.User{
-		Email:    email,
+		Username:    username,
 		Password: hashedPwd,
 	}
 
@@ -43,12 +43,12 @@ func (s *service) RegisterUser(
 }
 
 func (s *service) LoginUser(
-	email string, password string,
+	username string, password string,
 ) (int64, error) {
-	email = strings.TrimSpace(email)
+	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
 
-	user, err := s.repository.GetUser(email)
+	user, err := s.repository.GetUser(username)
 	if user == nil {
 		return 0, fmt.Errorf("user not found")
 	}

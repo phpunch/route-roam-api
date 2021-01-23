@@ -14,10 +14,10 @@ type authController interface {
 }
 
 func (c *controller) RegisterUser(ctx *gin.Context) {
-	email, found := ctx.GetPostForm("email")
+	username, found := ctx.GetPostForm("username")
 	if !found {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "email is not found",
+			"message": "username is not found",
 		})
 		return
 	}
@@ -28,7 +28,7 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 		})
 		return
 	}
-	userID, err := c.service.RegisterUser(email, password)
+	userID, err := c.service.RegisterUser(username, password)
 	if err != nil {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"message": fmt.Sprintf("%v", err),
@@ -54,10 +54,10 @@ func (c *controller) RegisterUser(ctx *gin.Context) {
 }
 
 func (c *controller) LoginUser(ctx *gin.Context) {
-	email, found := ctx.GetPostForm("email")
+	username, found := ctx.GetPostForm("username")
 	if !found {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "email not found",
+			"message": "username not found",
 		})
 		return
 	}
@@ -69,7 +69,7 @@ func (c *controller) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	userID, err := c.service.LoginUser(email, password)
+	userID, err := c.service.LoginUser(username, password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),

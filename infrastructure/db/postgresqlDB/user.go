@@ -8,20 +8,20 @@ import (
 
 type UserDBInterface interface {
 	CreateUser(user *model.User) (int64, error)
-	QueryUser(email string) (*model.User, error)
+	QueryUser(username string) (*model.User, error)
 }
 
 func (pgdb *PostgresqlDB) CreateUser(user *model.User) (int64, error) {
 	var userID int64
 	err := pgdb.DB.QueryRow(context.Background(), `
 		INSERT INTO users (
-			"email",
+			"username",
 			"password"
 		)
 		VALUES ($1, $2)
 		RETURNING id
 	`,
-		user.Email,
+		user.Username,
 		user.Password,
 	).Scan(&userID)
 	if err != nil {
@@ -32,14 +32,14 @@ func (pgdb *PostgresqlDB) CreateUser(user *model.User) (int64, error) {
 
 }
 
-func (pgdb *PostgresqlDB) QueryUser(email string) (*model.User, error) {
+func (pgdb *PostgresqlDB) QueryUser(username string) (*model.User, error) {
 	var result model.User
 	err := pgdb.DB.QueryRow(context.Background(), `
-		SELECT id, email, password FROM users 
-		WHERE users.email=$1
+		SELECT id, username, password FROM users 
+		WHERE users.username=$1
 	`,
-		email,
-	).Scan(&result.ID, &result.Email, &result.Password)
+		username,
+	).Scan(&result.ID, &result.Username, &result.Password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query user: %v", err)
 	}
