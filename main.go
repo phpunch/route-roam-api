@@ -59,6 +59,7 @@ func main() {
 		router.POST("/logout", c.LogoutUser)
 		router.POST("/file", c.UploadFiles)
 		router.POST("/post", c.CreatePost)
+		router.DELETE("/post/:postId", c.DeletePost)
 		router.POST("/like", c.LikePost)
 		router.POST("/unlike", c.UnlikePost)
 		router.GET("/posts", c.GetPosts)

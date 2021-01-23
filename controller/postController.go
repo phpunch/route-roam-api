@@ -15,6 +15,7 @@ type postController interface {
 	UnlikePost(ctx *gin.Context)
 	CommentPost(ctx *gin.Context)
 	GetPosts(ctx *gin.Context)
+	DeletePost(ctx *gin.Context)
 	GetCommentsByPostID(ctx *gin.Context)
 }
 
@@ -161,6 +162,28 @@ func (c *controller) GetPosts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"posts":   posts,
+	})
+}
+func (c *controller) DeletePost(ctx *gin.Context) {
+	postIDStr := ctx.Param("postId")
+	fmt.Printf("postId: %v\n", postIDStr)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "postId is not number",
+		})
+		return
+	}
+
+	err = c.service.DeletePost(int64(postID))
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": fmt.Sprintf("%v", err),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "success",
 	})
 }
 

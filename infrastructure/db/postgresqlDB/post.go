@@ -12,6 +12,7 @@ type PostDBInterface interface {
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
 	CreateComment(comment *model.Comment) error
+	DeletePost(postID int64) error
 	GetCommentsByPostID(postID int64) ([]model.Comment, error)
 }
 
@@ -118,6 +119,20 @@ func (pgdb *PostgresqlDB) CreateComment(comment *model.Comment) error {
 	).Scan(&comment.ID, &comment.UserName)
 	if err != nil {
 		return fmt.Errorf("failed to create comment: %v", err)
+	}
+
+	return nil
+}
+
+func (pgdb *PostgresqlDB) DeletePost(postID int64) error {
+	commandTag, err := pgdb.DB.Exec(context.Background(), `
+		delete from posts where id=$1
+	`, postID)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return fmt.Errorf("No row found to delete")
 	}
 
 	return nil

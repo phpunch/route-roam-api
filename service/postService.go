@@ -9,6 +9,7 @@ type postService interface {
 	LikePost(userId int64, postId int64) error
 	UnlikePost(userId int64, postId int64) error
 	GetPosts() ([]model.Post, error)
+	DeletePost(postID int64) error
 	CommentPost(userId int64, postId int64, text string) (*model.Comment, error)
 	GetCommentsByPostID(postId int64) ([]model.Comment, error)
 }
@@ -42,6 +43,10 @@ func (s *service) UnlikePost(userId int64, postId int64) error {
 }
 func (s *service) GetPosts() ([]model.Post, error) {
 	return s.repository.GetPosts()
+}
+
+func (s *service) DeletePost(postID int64) error {
+	return s.repository.DeletePost(postID)
 }
 
 func (s *service) CommentPost(userId int64, postId int64, text string) (*model.Comment, error) {
