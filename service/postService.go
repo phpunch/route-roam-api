@@ -50,11 +50,10 @@ func (s *service) CommentPost(userId int64, postId int64, text string) (*model.C
 		UserID: userId,
 		Text:   text,
 	}
-	commentID, err := s.repository.CommentPost(comment)
+	err := s.repository.CommentPost(comment)
 	if err != nil {
 		return nil, err
 	}
-	comment.ID = commentID
 	return comment, nil
 }
 

@@ -17,7 +17,7 @@ type Repository interface {
 	LikePost(like *model.Like) error
 	UnlikePost(like *model.Like) error
 	GetPosts() ([]model.Post, error)
-	CommentPost(comment *model.Comment) (int64, error)
+	CommentPost(comment *model.Comment) error
 	GetCommentsByPostID(postID int64) ([]model.Comment, error)
 }
 
@@ -58,7 +58,7 @@ func (r *repository) UnlikePost(like *model.Like) error {
 func (r *repository) GetPosts() ([]model.Post, error) {
 	return r.Ds.PostgresqlDB.GetPosts()
 }
-func (r *repository) CommentPost(comment *model.Comment) (int64, error) {
+func (r *repository) CommentPost(comment *model.Comment) error {
 	return r.Ds.PostgresqlDB.CreateComment(comment)
 }
 func (r *repository) GetCommentsByPostID(postID int64) ([]model.Comment, error) {
