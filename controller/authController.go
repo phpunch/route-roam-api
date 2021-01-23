@@ -16,12 +16,16 @@ type authController interface {
 func (c *controller) RegisterUser(ctx *gin.Context) {
 	email, found := ctx.GetPostForm("email")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "email is not found",
+		})
 		return
 	}
 	password, found := ctx.GetPostForm("password")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "password is not found",
+		})
 		return
 	}
 	userID, err := c.service.RegisterUser(email, password)
@@ -86,6 +90,7 @@ func (c *controller) LoginUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message":       "success",
+		"user_id":       userID,
 		"access_token":  token.AccessToken,
 		"refresh_token": token.RefreshToken,
 	})

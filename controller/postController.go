@@ -62,13 +62,15 @@ func (c *controller) LikePost(ctx *gin.Context) {
 
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "postId is not found",
+		})
 		return
 	}
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "userID is not number",
+			"message": "postId is not number",
 		})
 		return
 	}
@@ -89,7 +91,9 @@ func (c *controller) UnlikePost(ctx *gin.Context) {
 
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "postId is not found",
+		})
 		return
 	}
 	postID, err := strconv.Atoi(postIDStr)
@@ -116,7 +120,9 @@ func (c *controller) CommentPost(ctx *gin.Context) {
 
 	postIDStr, found := ctx.GetPostForm("postId")
 	if !found {
-		ctx.Status(http.StatusUnprocessableEntity)
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "postId is not found",
+		})
 		return
 	}
 	text, found := ctx.GetPostForm("text")
