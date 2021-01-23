@@ -175,7 +175,7 @@ func (c *controller) GetCommentsByPostID(ctx *gin.Context) {
 		return
 	}
 
-	posts, err := c.service.GetCommentsByPostID(int64(postID))
+	comments, err := c.service.GetCommentsByPostID(int64(postID))
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"message": fmt.Sprintf("%v", err),
@@ -183,7 +183,7 @@ func (c *controller) GetCommentsByPostID(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "success",
-		"posts":   posts,
+		"message":  "success",
+		"comments": comments,
 	})
 }
