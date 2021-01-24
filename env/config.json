@@ -13,7 +13,7 @@
   "REFRESH_SECRET": "sdklfjhsdkflsahdflk",
 
   "PostgreSQL": {
-    "DBHost": "localhost",
+    "DBHost": "postgres",
     "DBPort": "5432",
     "DBUsername": "postgres",
     "DBPassword": "postgres",
@@ -22,7 +22,7 @@
   },
 
   "Minio": {
-    "Endpoint": "localhost:9000",
+    "Endpoint": "minio1:9000",
     "AccessKeyID": "route-roam",
     "SecretAccessKey": "route-roam",
     "UseSSL": false,
@@ -30,6 +30,6 @@
   },
 
   "Redis": {
-    "Address": "localhost:6379"
+    "Address": "redis:6379"
   }
 }
