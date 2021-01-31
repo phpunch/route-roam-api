@@ -47,24 +47,24 @@ func main() {
 
 	router := gin.Default()
 
-	router.Use(middleware.CorMiddleware("http://localhost:3000"))
+	router.Use(middleware.CorMiddleware("*"))
 
-	router.POST("/register", c.RegisterUser)
-	router.POST("/login", c.LoginUser)
-	router.POST("/token/refresh", c.Refresh)
-	router.GET("/file/*filepath", c.GetFile)
+	router.POST("/api/register", c.RegisterUser)
+	router.POST("/api/login", c.LoginUser)
+	router.POST("/api/token/refresh", c.Refresh)
+	router.GET("/api/file/*filepath", c.GetFile)
 
 	router.Use(mw.AuthorizeToken())
 	{
-		router.POST("/logout", c.LogoutUser)
-		router.POST("/file", c.UploadFiles)
-		router.POST("/post", c.CreatePost)
-		router.DELETE("/post/:postId", c.DeletePost)
-		router.POST("/like", c.LikePost)
-		router.POST("/unlike", c.UnlikePost)
-		router.GET("/posts", c.GetPosts)
-		router.POST("/comment", c.CommentPost)
-		router.GET("/comment/:postId", c.GetCommentsByPostID)
+		router.POST("/api/logout", c.LogoutUser)
+		router.POST("/api/file", c.UploadFiles)
+		router.POST("/api/post", c.CreatePost)
+		router.DELETE("/api/post/:postId", c.DeletePost)
+		router.POST("/api/like", c.LikePost)
+		router.POST("/api/unlike", c.UnlikePost)
+		router.GET("/api/posts", c.GetPosts)
+		router.POST("/api/comment", c.CommentPost)
+		router.GET("/api/comment/:postId", c.GetCommentsByPostID)
 	}
 
 	router.Run()
