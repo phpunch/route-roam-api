@@ -3,6 +3,7 @@ package postgresqlDB
 import (
 	"context"
 	"fmt"
+	"github.com/phpunch/route-roam-api/log"
 	"github.com/phpunch/route-roam-api/model"
 )
 
@@ -32,7 +33,9 @@ func (pgdb *PostgresqlDB) CreatePost(post *model.Post) (int64, error) {
 		post.ImageURL,
 	).Scan(&postID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create post: %v", err)
+		log.Log.Debugf("%+v", err)
+
+		return 0, fmt.Errorf("failed to create post")
 	}
 
 	return postID, nil
@@ -49,21 +52,26 @@ func (pgdb *PostgresqlDB) LikePost(like *model.Like) error {
 		like.PostID,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create post: %v", err)
+		log.Log.Debugf("%+v", err)
+		return fmt.Errorf("failed to like post")
 	}
 
 	return nil
 }
 func (pgdb *PostgresqlDB) UnlikePost(like *model.Like) error {
-	commandTag, _ := pgdb.DB.Exec(context.Background(), `
+	commandTag, err := pgdb.DB.Exec(context.Background(), `
 		delete from likes 
 		where user_id=$1 and post_id=$2
 `,
 		like.UserID,
 		like.PostID,
 	)
+	if err != nil {
+		log.Log.Debugf("%+v", err)
+		return err
+	}
 	if commandTag.RowsAffected() != 1 {
-		return fmt.Errorf("failed to delete row")
+		return fmt.Errorf("failed to unlike post")
 	}
 
 	return nil
@@ -82,7 +90,8 @@ func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 		group by p.id, u.username
 	`)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query user: %v", err)
+		log.Log.Debugf("%+v", err)
+		return nil, fmt.Errorf("failed to get posts")
 	}
 	defer rows.Close()
 
@@ -90,7 +99,8 @@ func (pgdb *PostgresqlDB) GetPosts() ([]model.Post, error) {
 		var post model.Post
 		err = rows.Scan(&post.ID, &post.UserID, &post.UserName, &post.Text, &post.ImageURL, &post.LikedBy, &post.NumComments)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %v", err)
+			log.Log.Debugf("%+v", err)
+			return nil, fmt.Errorf("failed to get posts")
 		}
 		result = append(result, post)
 	}
@@ -118,7 +128,8 @@ func (pgdb *PostgresqlDB) CreateComment(comment *model.Comment) error {
 		comment.Text,
 	).Scan(&comment.ID, &comment.UserName)
 	if err != nil {
-		return fmt.Errorf("failed to create comment: %v", err)
+		log.Log.Debugf("%+v", err)
+		return fmt.Errorf("failed to create comment")
 	}
 
 	return nil
@@ -129,10 +140,11 @@ func (pgdb *PostgresqlDB) DeletePost(postID int64) error {
 		delete from posts where id=$1
 	`, postID)
 	if err != nil {
+		log.Log.Debugf("%+v", err)
 		return err
 	}
 	if commandTag.RowsAffected() != 1 {
-		return fmt.Errorf("No row found to delete")
+		return fmt.Errorf("failed to delete post")
 	}
 
 	return nil
@@ -149,7 +161,8 @@ func (pgdb *PostgresqlDB) GetCommentsByPostID(postID int64) ([]model.Comment, er
 		postID,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query comment: %v", err)
+		log.Log.Debugf("%+v", err)
+		return nil, fmt.Errorf("failed to query comment")
 	}
 	defer rows.Close()
 
@@ -157,7 +170,8 @@ func (pgdb *PostgresqlDB) GetCommentsByPostID(postID int64) ([]model.Comment, er
 		var c model.Comment
 		err = rows.Scan(&c.ID, &c.PostID, &c.UserID, &c.UserName, &c.Text)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %v", err)
+			log.Log.Debugf("%+v", err)
+			return nil, fmt.Errorf("failed to query comment")
 		}
 		result = append(result, c)
 	}

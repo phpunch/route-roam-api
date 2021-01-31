@@ -3,6 +3,7 @@ package postgresqlDB
 import (
 	"context"
 	"fmt"
+	"github.com/phpunch/route-roam-api/log"
 	"github.com/phpunch/route-roam-api/model"
 )
 
@@ -25,7 +26,8 @@ func (pgdb *PostgresqlDB) CreateUser(user *model.User) (int64, error) {
 		user.Password,
 	).Scan(&userID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create user: %v", err)
+		log.Log.Debugf("%+v", err)
+		return 0, fmt.Errorf("failed to create user")
 	}
 
 	return userID, nil
@@ -41,7 +43,8 @@ func (pgdb *PostgresqlDB) QueryUser(username string) (*model.User, error) {
 		username,
 	).Scan(&result.ID, &result.Username, &result.Password)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query user: %v", err)
+		log.Log.Debugf("%+v", err)
+		return nil, fmt.Errorf("failed to query user")
 	}
 	return &result, nil
 }
